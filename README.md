@@ -12,6 +12,12 @@
 
 Our `server.js` file is getting rather bloated again, and `express.Router` will let us put our routes in a separate file.
 
+## Setup
+
+1. `cd ~/sei/express-fruits`
+2. Open `express-fruits` in your editor.
+3. `nodemon`
+
 ## Create external controller file for routes
 
 1. `mkdir controllers`
