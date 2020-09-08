@@ -70,15 +70,22 @@ router.post('/fruits', (req, res)=>{
 // show route
 // this route will catch GET requests to /fruits/anyValue
 // and respond with a single the fruit
-router.get('/fruits/:fruitIndex', (req, res) => {
-    res.send(fruits[req.params.fruitIndex]);
+router.get('/fruits/:fruitIndex', function(req, res){
+    // the first param of render() is the .ejs file that we want to inject data into
+    // the second param is the data that we want to inject into the .ejs file (it must be an object)
+    res.render('show.ejs', {
+            //there will be a variable available inside the show.ejs file called oneFruit, and its value is fruits[req.params.fruitIndex]
+        oneFruit: fruits[req.params.fruitIndex]
+    });
 });
 
 // index route
 // this route will catch GET requests to /fruits
 // and respond with all the fruits
-router.get('/fruits', (req, res) => {
-    res.send(fruits);
+app.get('/fruits/', (req, res) => {
+    res.render('index.ejs', {
+        allFruits: fruits
+    })
 });
 
 module.exports = router;
@@ -151,15 +158,22 @@ router.post('/', (req, res)=>{
 // show route
 // this route will catch GET requests to /fruits/anyValue
 // and respond with a single fruit
-router.get('/:fruitIndex', (req, res) => {
-    res.send(fruits[req.params.fruitIndex]);
+router.get('/fruits/:fruitIndex', function(req, res){
+    // the first param of render() is the .ejs file that we want to inject data into
+    // the second param is the data that we want to inject into the .ejs file (it must be an object)
+    res.render('show.ejs', {
+            //there will be a variable available inside the show.ejs file called oneFruit, and its value is fruits[req.params.fruitIndex]
+        oneFruit: fruits[req.params.fruitIndex]
+    });
 });
 
 // index route
 // this route will catch GET requests to /fruits
 // and respond with all the fruits
-router.get('/', (req, res) => {
-    res.send(fruits);
+app.get('/fruits/', (req, res) => {
+    res.render('index.ejs', {
+        allFruits: fruits
+    })
 });
 
 module.exports = router;
