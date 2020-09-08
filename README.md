@@ -149,7 +149,7 @@ router.post('/', (req, res)=>{
 
 // show route
 // this route will catch GET requests to /fruits/anyValue
-// and respond with a single the fruit
+// and respond with a single fruit
 router.get('/:fruitIndex', (req, res) => {
     res.send(fruits[req.params.fruitIndex]);
 });
