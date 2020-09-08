@@ -70,7 +70,7 @@ router.post('/fruits', (req, res)=>{
 // show route
 // this route will catch GET requests to /fruits/anyValue
 // and respond with a single the fruit
-router.get('/fruits/:fruitIndex', function(req, res){
+router.get('/:fruitIndex', function(req, res){
     // the first param of render() is the .ejs file that we want to inject data into
     // the second param is the data that we want to inject into the .ejs file (it must be an object)
     res.render('show.ejs', {
@@ -82,7 +82,7 @@ router.get('/fruits/:fruitIndex', function(req, res){
 // index route
 // this route will catch GET requests to /fruits
 // and respond with all the fruits
-app.get('/fruits/', (req, res) => {
+router.get('/', (req, res) => {
     res.render('index.ejs', {
         allFruits: fruits
     })
@@ -158,7 +158,7 @@ router.post('/', (req, res)=>{
 // show route
 // this route will catch GET requests to /fruits/anyValue
 // and respond with a single fruit
-router.get('/fruits/:fruitIndex', function(req, res){
+router.get('/:fruitIndex', function(req, res){
     // the first param of render() is the .ejs file that we want to inject data into
     // the second param is the data that we want to inject into the .ejs file (it must be an object)
     res.render('show.ejs', {
@@ -170,7 +170,7 @@ router.get('/fruits/:fruitIndex', function(req, res){
 // index route
 // this route will catch GET requests to /fruits
 // and respond with all the fruits
-app.get('/fruits/', (req, res) => {
+router.get('/', (req, res) => {
     res.render('index.ejs', {
         allFruits: fruits
     })
