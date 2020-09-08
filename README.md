@@ -120,6 +120,7 @@ The middleware in `server.js` is now taking care of the first part of the URL pa
 ```js
 const express = require('express');
 const router = express.Router();
+const fruits = require('../models/fruit_model.js');
 
 // create route
 // this route will catch GET requests to /fruits/newForm
