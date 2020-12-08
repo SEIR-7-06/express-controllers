@@ -2,22 +2,27 @@
 
 ## Lesson Objectives
 
-1. Explain What Express.Router does for us
-1. Create External Controller File for Routes
-1. Move Server.js Routes to External Controller File
-1. Use Controller File in Server.js
-1. Remove References to Base of Controller's URLs
+1. Explain what `express.Router` does for us
+1. Create an external controller file for routes
+1. Move `server.js` routes to external controller file
+1. Use controller file in `server.js`
+1. Remove references to base of controller's URLs
 
-## Explain What Express.Router does for us
+## Explain what `express.Router` does for us
 
-- Our server.js file is getting rather bloated
-- express.Router will let us put our routes in a separate file
+Our `server.js` file is getting rather bloated again, and `express.Router` will let us put our routes in a separate file.
 
-## Create External Controller File for Routes
+## Setup
+
+1. `cd ~/sei/express-fruits`
+2. Open `express-fruits` in your editor.
+3. `nodemon`
+
+## Create external controller file for routes
 
 1. `mkdir controllers`
-1. `touch controllers/fruits.js`
-1. Edit controllers/fruits.js
+2. `touch controllers/fruits_controllers.js`
+3. In `controllers/fruits_controllers.js`:
 
 ```javascript
 const express = require('express');
@@ -26,171 +31,149 @@ const router = express.Router();
 module.exports = router;
 ```
 
-## Move Server.js Routes to External Controller File
+## Move `server.js` routes to external controller file
 
-rename `app` to `router`
+First, let's cut all the routes from `server.js` and paste them in `controllers/fruits_controllers.js`.
 
-```javascript
+Once they're in there, replace `app` with `router`, the variable we declared at the top.
+
+```js
 const express = require('express');
 const router = express.Router();
 
-router.get('/fruits/new', (req, res)=>{
+// create route
+// this route will catch GET requests to /fruits/newForm
+// and respond with a form for creating new fruits
+router.get('/fruits/newForm', (req, res) => {
     res.render('new.ejs');
 });
 
-router.post('/fruits/', (req, res)=>{
-    if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
-        req.body.readyToEat = true;
-    } else { //if not checked, req.body.readyToEat is undefined
-        req.body.readyToEat = false;
-    }
-   
-        res.redirect('/fruits');
-   
-});
-
-router.get('/fruits', (req, res)=>{
-    
-        res.render('index.ejs', {
-            fruits: Fruits
-        });
-
-});
-
-router.get('/fruits/:id', (req, res)=>{
-   
-        res.render('show.ejs', {
-            fruit: Fruit[req.params.id]
-        });
-   
-});
-
-router.delete('/fruits/:id', (req, res)=>{
-        Fruits.splice(req.params.id,1)
-        res.redirect('/fruits')
- 
-});
-
-router.get('/fruits/:id/edit', (req, res)=>{
-    Fruit.findById(req.params.id, (err, foundFruit)=>{ //find the fruit
-        res.render(
-    		'edit.ejs',
-    		{
-    			fruit: foundFruit //pass in found fruit
-    		}
-    	);
-    });
-});
-
-router.put('/fruits/:id', (req, res)=>{
+// create route
+// this route will catch POST requests to /fruits
+// and, after creating new data, respond by redirecting
+// the user to the index route
+router.post('/fruits', (req, res)=>{
     if(req.body.readyToEat === 'on'){
         req.body.readyToEat = true;
     } else {
         req.body.readyToEat = false;
     }
-    
-    Fruit[req.params.id] = req.body
+    fruits.push(req.body);
+     // redirect the user to the index route
+     // since the index route is listening for GET requests
+     // with a URL path of '/fruits', we just need to include
+     // the URL path as the argument since the .redirect() method
+     // has a default HTTP verb of GET.
     res.redirect('/fruits');
- 
+});
+
+// show route
+// this route will catch GET requests to /fruits/anyValue
+// and respond with a single the fruit
+router.get('/:fruitIndex', function(req, res){
+    // the first param of render() is the .ejs file that we want to inject data into
+    // the second param is the data that we want to inject into the .ejs file (it must be an object)
+    res.render('show.ejs', {
+            //there will be a variable available inside the show.ejs file called oneFruit, and its value is fruits[req.params.fruitIndex]
+        oneFruit: fruits[req.params.fruitIndex]
+    });
+});
+
+// index route
+// this route will catch GET requests to /fruits
+// and respond with all the fruits
+router.get('/', (req, res) => {
+    res.render('index.ejs', {
+        allFruits: fruits
+    })
 });
 
 module.exports = router;
 ```
 
-## Require Fruit Model in Controller File
+Because `router` is an object, we can add routes to it and then just export the entire object at once instead of having to export each route.
 
-```javascript
+
+## Require fruit model in controller file
+
+We no longer need to import the `fruits` data into `server.js` because our references to it are in the routes. So, let's move that import statement from `server.js` to `controllers/fruits_controllers.js`.
+
+```js
 const express = require('express');
 const router = express.Router();
-const Fruit = require('../models/fruits.js')
-//...
+const fruits = require('../models/fruit_model.js');
 ```
 
-The `Fruit` model is no longer needed in `server.js`.  Remove it:
+Notice how we had to modify the path to `fruit_model.js` because we have to go up a level before going into the `models` directory.
 
-```javascript
-const express = require('express');
-const app = express();
-const mongoose = require('mongoose');
-const db = mongoose.connection;
-const bodyParser = require('body-parser');
-const methodOverride = require('method-override');
-```
 
-## Use Controller File in Server.js
+## Use the controller file in `server.js`
 
-```javascript
-const fruitsController = require('./controllers/fruits.js');
+Now that the routes are no longer in `server.js`, we have to import the controller file into `server.js` and then `.use()` it to direct all requests to it.
+
+```js
+const fruitsController = require('./controllers/fruits_controllers.js');
 app.use('/fruits', fruitsController);
 ```
 
-## Remove References to Base of Controller's URLs
+Notice that we identified the route as `/fruits`. This is because all of our routes so far include `/fruits` as the first part of the URL path. So, we can DRY up our code by identifying the first part of the URL path here, and removing it from all of the routes, leaving the parts of the URL paths that make them unique.
 
-Since we've specified that the controller works with all urls starting with /fruits, we can remove this from the controller file:
+## Remove references to base of controller's URLs
 
-```javascript
+The middleware in `server.js` is now taking care of the first part of the URL path that all the routes have in common, so we can remove them from the routes in `controllers/fruits_controllers.js`.
+
+(For those routes that **only** have `/fruits` in their route, we just leave a simple `'/'` to indicate that nothing follows `/fruits` in the URL path. We're essentially saying that `/fruits` is the same thing as `/fruits/`, which is true.)
+
+```js
 const express = require('express');
 const router = express.Router();
+const fruits = require('../models/fruit_model.js');
 
-router.get('/new', (req, res)=>{
+// create route
+// this route will catch GET requests to /fruits/newForm
+// and respond with a form for creating new fruits
+router.get('/newForm', (req, res) => {
     res.render('new.ejs');
 });
 
+// create route
+// this route will catch POST requests to /fruits
+// and, after creating new data, respond by redirecting
+// the user to the index route
 router.post('/', (req, res)=>{
-    if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
-        req.body.readyToEat = true;
-    } else { //if not checked, req.body.readyToEat is undefined
-        req.body.readyToEat = false;
-    }
-    Fruit.push(req.body)
-    res.redirect('/fruits');
-
-});
-
-router.get('/', (req, res)=>{
-    
-    res.render('index.ejs', {
-        fruits: Fruits
-    });
-  
-});
-
-router.get('/:id', (req, res)=>{
-    
-    res.render('show.ejs', {
-        fruit: Fruit[req.params.id]
-    });
-   
-});
-
-router.delete('/:id', (req, res)=>{
-   Fruits.splice(req.params.id, 1);
-   res.redirect('/fruits');
-  
-});
-
-router.get('/:id/edit', (req, res)=>{
-   
-        res.render(
-    		'edit.ejs',
-    		{
-    			fruit: Fruits[req.params.id] //pass in found fruit
-    		}
-    	);
-
-});
-
-router.put('/:id', (req, res)=>{
     if(req.body.readyToEat === 'on'){
         req.body.readyToEat = true;
     } else {
         req.body.readyToEat = false;
     }
-    
-    Fruits[req.params.id] = req.body
-    
+    fruits.push(req.body);
+     // redirect the user to the index route
+     // since the index route is listening for GET requests
+     // with a URL path of '/fruits', we just need to include
+     // the URL path as the argument since the .redirect() method
+     // has a default HTTP verb of GET.
     res.redirect('/fruits');
- 
+});
+
+// show route
+// this route will catch GET requests to /fruits/anyValue
+// and respond with a single fruit
+router.get('/:fruitIndex', function(req, res){
+    // the first param of render() is the .ejs file that we want to inject data into
+    // the second param is the data that we want to inject into the .ejs file (it must be an object)
+    res.render('show.ejs', {
+            //there will be a variable available inside the show.ejs file called oneFruit, and its value is fruits[req.params.fruitIndex]
+        oneFruit: fruits[req.params.fruitIndex]
+    });
+});
+
+// index route
+// this route will catch GET requests to /fruits
+// and respond with all the fruits
+router.get('/', (req, res) => {
+    res.render('index.ejs', {
+        allFruits: fruits
+    })
 });
 
 module.exports = router;
